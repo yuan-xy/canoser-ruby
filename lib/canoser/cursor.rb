@@ -6,12 +6,16 @@ module Canoser
   	end
 
   	def read_bytes(size)
-  		new_offset = @offset+size
-  		raise "" if new_offset > @bytes.size
-  		ret = @bytes[@offset..new_offset]
-  		@offset = new_offset
+  		raise ParseError.new("#{@offset+size} exceed bytes size:#{@bytes.size}") if @offset+size > @bytes.size
+  		ret = @bytes[@offset, size]
+  		@offset += size
   		ret
   	end
+
+    def peek_bytes(size)
+      raise ParseError.new("#{@offset+size} exceed bytes size:#{@bytes.size}") if @offset+size > @bytes.size
+      @bytes[@offset, size]
+    end    
 
   	def finished?
   		@offset == @bytes.size
