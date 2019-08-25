@@ -4,5 +4,5 @@ require "canoser/field"
 require "canoser/struct"
 
 module Canoser
-
+	class ParseError < StandardError; end
 end

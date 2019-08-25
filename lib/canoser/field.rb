@@ -13,9 +13,13 @@ module Canoser
       [@value].pack("C")
     end
 
+    def self.decode_bytes(bytes)
+      new(bytes.unpack("C")[0])
+    end
+
     def self.decode(cursor)
       bytes = cursor.read_bytes(1)
-      new(bytes.unpack("C")[0])
+      decode_bytes(bytes)
     end
   end
 
@@ -24,9 +28,13 @@ module Canoser
       [@value].pack("S")
     end
 
+    def self.decode_bytes(bytes)
+      new(bytes.unpack("S")[0])
+    end
+
     def self.decode(cursor)
       bytes = cursor.read_bytes(2)
-      new(bytes.unpack("S")[0])
+      decode_bytes(bytes)
     end
   end
 
@@ -35,9 +43,13 @@ module Canoser
       [@value].pack("L")
     end
 
+    def self.decode_bytes(bytes)
+      new(bytes.unpack("L")[0])
+    end
+
     def self.decode(cursor)
       bytes = cursor.read_bytes(4)
-      new(bytes.unpack("L")[0])
+      decode_bytes(bytes)
     end
   end
 
@@ -46,9 +58,13 @@ module Canoser
       [@value].pack("Q")
     end
 
+    def self.decode_bytes(bytes)
+      new(bytes.unpack("Q")[0])
+    end
+
     def self.decode(cursor)
       bytes = cursor.read_bytes(8)
-      new(bytes.unpack("Q")[0])
+      decode_bytes(bytes)
     end
   end
 
@@ -57,11 +73,15 @@ module Canoser
       @value? "\1" : "\0"
     end
 
+    def self.decode_bytes(bytes)
+      return new(true) if bytes == "\1"
+      return new(false) if bytes == "\0"
+      raise ParseError.new("bool should be 0 or 1.")
+    end
+
     def self.decode(cursor)
       bytes = cursor.read_bytes(1)
-      return new(true) if bytes == "1"
-      return new(false) if bytes == "0"
-      raise "bool should be 0 or 1."
+      decode_bytes(bytes)
     end
   end
 

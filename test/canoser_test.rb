@@ -8,7 +8,7 @@ class CanoserTest < Minitest::Test
   def test_uint8
     x = Canoser::Uint8.new(16)
     assert_equal x.encode, "\x10"
-    ret = Canoser::Uint8.decode(Canoser::Cursor.new("\x10"))
+    ret = Canoser::Uint8.decode_bytes("\x10")
     assert_equal ret.value, 16
   end
 
@@ -17,7 +17,7 @@ class CanoserTest < Minitest::Test
     assert_equal x.encode, "\x10\x00"
     x = Canoser::Uint16.new(257)
     assert_equal x.encode, "\x01\x01"
-    ret = Canoser::Uint16.decode(Canoser::Cursor.new("\x01\x01"))
+    ret = Canoser::Uint16.decode_bytes("\x01\x01")
     assert_equal ret.value, 257
   end
 
@@ -26,7 +26,7 @@ class CanoserTest < Minitest::Test
     assert_equal x.encode, "\x10\x00\x00\x00"
     x = Canoser::Uint32.new(0x12345678)
     assert_equal x.encode, "\x78\x56\x34\x12"
-    ret = Canoser::Uint32.decode(Canoser::Cursor.new("\x78\x56\x34\x12"))
+    ret = Canoser::Uint32.decode_bytes("\x78\x56\x34\x12")
     assert_equal ret.value, 0x12345678
   end
 
@@ -35,8 +35,19 @@ class CanoserTest < Minitest::Test
     assert_equal x.encode, "\x10\x00\x00\x00\x00\x00\x00\x00"
     x = Canoser::Uint64.new(0x1234567811223344)
     assert_equal x.encode, "\x44\x33\x22\x11\x78\x56\x34\x12"    
-    ret = Canoser::Uint64.decode(Canoser::Cursor.new("\x44\x33\x22\x11\x78\x56\x34\x12"))
+    ret = Canoser::Uint64.decode_bytes("\x44\x33\x22\x11\x78\x56\x34\x12")
     assert_equal ret.value, 0x1234567811223344
+  end
+
+  def test_bool
+    x = Canoser::Bool.new(true)
+    assert_equal x.encode, "\x1"
+    ret = Canoser::Bool.decode_bytes("\x1")
+    assert ret.value
+    assert_equal Canoser::Bool.new(false).encode, "\0"
+    assert_raises Canoser::ParseError do
+      Canoser::Bool.decode_bytes("\x2")
+    end
   end
 
   class Address < Canoser::Struct
