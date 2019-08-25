@@ -1,10 +1,11 @@
 
 module Canoser
   class Field
+    attr_accessor :value
+
   	def initialize(value)
   		@value = value
   	end
-
   end
 
   class Uint8 < Field
@@ -14,7 +15,7 @@ module Canoser
 
     def self.decode(cursor)
       bytes = cursor.read_bytes(1)
-      bytes.unpack("C")
+      new(bytes.unpack("C")[0])
     end
   end
 
@@ -25,7 +26,7 @@ module Canoser
 
     def self.decode(cursor)
       bytes = cursor.read_bytes(2)
-      bytes.unpack("S")
+      new(bytes.unpack("S")[0])
     end
   end
 
@@ -36,7 +37,7 @@ module Canoser
 
     def self.decode(cursor)
       bytes = cursor.read_bytes(4)
-      bytes.unpack("L")
+      new(bytes.unpack("L")[0])
     end
   end
 
@@ -47,11 +48,21 @@ module Canoser
 
     def self.decode(cursor)
       bytes = cursor.read_bytes(8)
-      bytes.unpack("Q")
+      new(bytes.unpack("Q")[0])
     end
   end
 
   class Bool < Field
+    def encode
+      @value? "\1" : "\0"
+    end
+
+    def self.decode(cursor)
+      bytes = cursor.read_bytes(1)
+      return new(true) if bytes == "1"
+      return new(false) if bytes == "0"
+      raise "bool should be 0 or 1."
+    end
   end
 
   class Optional

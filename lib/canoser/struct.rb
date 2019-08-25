@@ -9,7 +9,7 @@ module Canoser
   		@@types << type
   		@@arr_lens ||= {}
       raise "type #{type} doen't support arr_len param" unless type.class==Array
-  		@@arr_lens[type] = arr_len if arr_len
+  		@@arr_lens[name] = arr_len if arr_len
   	end
 
   	def initialize(hash={})
@@ -19,8 +19,8 @@ module Canoser
   			raise "#{k} is not a field of #{self}" unless idx
   			type = @@types[idx]
         if type.class == Array
-          len = @@arr_lens[type]
-          raise "#{len} != #{v.size}" if len && v.size != len
+          len = @@arr_lens[k]
+          raise "#{k}-#{type} #{len} != #{v.size}" if len && v.size != len
           inner_type = type[0]
           vv = v.map{|x| inner_type.new(x)}
           @values[k] = vv
@@ -40,8 +40,8 @@ module Canoser
   			type = @@types[idx]
         value = @values[name]
         if type.class == Array
-          len = @@arr_lens[type]
-          output << value.size unless len
+          len = @@arr_lens[name]
+          output << Uint32.new(value.size).encode unless len
           value.each{|x| output << x.encode}
         else
           output << value.encode
@@ -55,9 +55,9 @@ module Canoser
   		@@names.each_with_index do |name, idx|
   			type = @@types[idx]
         if type.class == Array
-          len = @@arr_lens[type]
-          unless len
-            len = decode_len(bytes)
+          len = @@arr_lens[name]
+          unless len #dynamic sized array
+            len = Uint32.decode(cursor).value
           end
           arr = []
           inner_type = type[0]
