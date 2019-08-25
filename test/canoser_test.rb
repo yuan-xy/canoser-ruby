@@ -79,5 +79,15 @@ class CanoserTest < Minitest::Test
     assert [true,false,true], vector.map{|x| x.value}
   end
 
+  class Map < Canoser::Struct
+    define_field :map, {} #libra only support [u8] both of k and v
+  end
+
+  def test_map
+    hash = {"k1" => "v1", "k2" => "v2"}
+    ser = Map.new(map: hash).serialize
+    hash2 = Map.new.deserialize(ser)[:map]
+    assert_equal hash, hash2
+  end
 
 end

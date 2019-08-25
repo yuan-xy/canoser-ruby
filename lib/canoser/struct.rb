@@ -1,10 +1,43 @@
 require 'byebug'
 
 module Canoser
+
+  refine Hash do
+    def encode
+      output = ""
+      output << Uint32.new(self.size).encode
+      self.keys.each do |key|
+        output << Uint32.new(key.size).encode
+        output << key.to_s
+        v = self[key]
+        output << Uint32.new(v.size).encode
+        output << v.to_s
+      end
+      output
+    end
+  end
+
+  refine Hash.singleton_class do
+    def decode(cursor)
+      hash = {}
+      len = Uint32.decode(cursor).value
+      len.times do
+        ksize = Uint32.decode(cursor).value
+        k = cursor.read_bytes(ksize)
+        vsize = Uint32.decode(cursor).value
+        v = cursor.read_bytes(vsize)
+        hash[k] = v
+      end
+      hash
+    end
+  end
+
+  using Canoser
+
   class Struct
   	def self.define_field(name, type, arr_len=nil)
       name = ":"+name.to_sym.to_s
-      arr_len_to_s = arr_len
+      arr_len_to_s = arr_len.to_s
       arr_len_to_s = "nil" if arr_len==nil      
       str = %Q{
       @@names ||= []
@@ -12,8 +45,13 @@ module Canoser
       @@types ||= []
       @@types << #{type}
       @@arr_lens ||= {}
-      raise "type #{type} doen't support arr_len param" unless #{type}.class==Array
-      @@arr_lens[#{name}] = #{arr_len_to_s} if #{arr_len_to_s} != nil
+      if #{arr_len_to_s} != nil
+        if #{type}.class==Array
+          @@arr_lens[#{name}] = #{arr_len_to_s}
+        else
+          raise "type #{type} doen't support arr_len param"
+        end
+      end
       }
       class_eval str
   	end
@@ -30,6 +68,8 @@ module Canoser
           inner_type = type[0]
           vv = v.map{|x| inner_type.new(x)}
           @values[k] = vv
+        elsif type.class == Hash
+          @values[k] = v
         else
           @values[k] = type.new(v)
         end
@@ -49,6 +89,8 @@ module Canoser
           len = self.class.class_variable_get("@@arr_lens")[name]
           output << Uint32.new(value.size).encode unless len
           value.each{|x| output << x.encode}
+        elsif type.class == Hash
+          output << value.encode
         else
           output << value.encode
         end
@@ -69,6 +111,8 @@ module Canoser
           inner_type = type[0]
           len.times{ arr.push(inner_type.decode(cursor))}
           @values[name] = arr
+        elsif type.class == Hash
+          @values[name] = Hash.decode(cursor)
         else
           @values[name] = type.decode(cursor)
         end
@@ -78,4 +122,5 @@ module Canoser
   	end
 
   end
+
 end
