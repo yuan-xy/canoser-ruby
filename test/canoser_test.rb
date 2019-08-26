@@ -77,11 +77,11 @@ class CanoserTest < Minitest::Test
     ser = bools.serialize
     assert_equal ser, "\x3\x0\x0\x0\x1\x0\x1"
     vector = BoolVector.new.deserialize(ser)[:vec]
-    assert [true,false,true], vector
+    assert_equal [true,false,true], vector
   end
 
   class Map < Canoser::Struct
-    define_field :map, {}
+    define_field :map, {String => String}
   end
 
 #  libra only support [u8] type for both of k and v

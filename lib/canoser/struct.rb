@@ -120,9 +120,9 @@ module Canoser
     def decode(cursor)
       self.class.class_variable_get("@@names").each_with_index do |name, idx|
         type = self.class.class_variable_get("@@types")[idx]
-        len = self.class.class_variable_get("@@arr_lens")[name]
-        if len
-          @values[name] = type.decode(cursor, len)
+        if type.class == Array
+          len = self.class.class_variable_get("@@arr_lens")[name]
+          @values[name] = type.decode(cursor, len, type[0])
         else
           @values[name] = type.decode(cursor)
         end
