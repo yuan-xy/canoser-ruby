@@ -89,6 +89,21 @@ module Canoser
       @values[name.to_sym]
     end
 
+    def []=(name, value)
+      @values[name.to_sym] = value
+    end
+
+    def ==(other)
+      return true if self.equal?(other)
+      self.class.class_variable_get("@@names").each_with_index do |name, idx|
+        unless @values[name] == other[name]
+          byebug
+          return false
+        end
+      end
+      true
+    end
+    
     def self.encode(value)
       value.serialize
     end

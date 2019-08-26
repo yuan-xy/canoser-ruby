@@ -147,7 +147,7 @@ class CanoserTest < Minitest::Test
     str2 = [TEST_VECTOR_1].pack('H*')
     assert_equal str1, str2 
     foo2 = Foo.new.deserialize(str1)
-    #assert_equal foo, foo2
+    assert_equal foo, foo2
   end
 
 end
