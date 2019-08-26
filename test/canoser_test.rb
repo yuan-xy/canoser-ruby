@@ -65,20 +65,20 @@ class CanoserTest < Minitest::Test
     ser = bools.serialize
     assert_equal ser, "\x3\x0\x0\x0\x2\x3\x4"
     vector = Uint8Vector.new.deserialize(ser)[:vec]
-    assert [true,false,true], vector
+    assert [2,3,4], vector
   end
 
-  # class BoolVector < Canoser::Struct
-  #   define_field :vec, [Canoser::Bool]
-  # end
+  class BoolVector < Canoser::Struct
+    define_field :vec, [Canoser::Bool]
+  end
 
-  # def test_list_dyn_size
-  #   bools = BoolVector.new(vec: [true,false,true])
-  #   ser = bools.serialize
-  #   assert_equal ser, "\x3\x0\x0\x0\x1\x0\x1"
-  #   vector = BoolVector.new.deserialize(ser)[:vec]
-  #   assert [true,false,true], vector
-  # end
+  def test_bool_list
+    bools = BoolVector.new(vec: [true,false,true])
+    ser = bools.serialize
+    assert_equal ser, "\x3\x0\x0\x0\x1\x0\x1"
+    vector = BoolVector.new.deserialize(ser)[:vec]
+    assert [true,false,true], vector
+  end
 
   class Map < Canoser::Struct
     define_field :map, {}

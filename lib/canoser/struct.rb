@@ -98,9 +98,9 @@ module Canoser
   		self.class.class_variable_get("@@names").each_with_index do |name, idx|
   			type = self.class.class_variable_get("@@types")[idx]
         value = @values[name]
-        len = self.class.class_variable_get("@@arr_lens")[name]
-        if len
-          output << type.encode(value, len)
+        if type.class == Array
+          len = self.class.class_variable_get("@@arr_lens")[name]
+          output << type.encode(value, len, type[0])
         else
           output << type.encode(value)
         end
