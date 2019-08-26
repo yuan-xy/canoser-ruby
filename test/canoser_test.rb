@@ -6,45 +6,34 @@ class CanoserTest < Minitest::Test
   end
 
   def test_uint8
-    x = Canoser::Uint8.new(16)
-    assert_equal x.encode, "\x10"
-    ret = Canoser::Uint8.decode_bytes("\x10")
-    assert_equal ret.value, 16
+    assert_equal Canoser::Uint8.encode(16), "\x10"
+    assert_equal Canoser::Uint8.decode_bytes("\x10"), 16
+    assert_equal Canoser::Uint8.max_value, 255
   end
 
   def test_uint16
-    x = Canoser::Uint16.new(16)
-    assert_equal x.encode, "\x10\x00"
-    x = Canoser::Uint16.new(257)
-    assert_equal x.encode, "\x01\x01"
-    ret = Canoser::Uint16.decode_bytes("\x01\x01")
-    assert_equal ret.value, 257
+    assert_equal Canoser::Uint16.encode(16), "\x10\x00"
+    assert_equal Canoser::Uint16.encode(257), "\x01\x01"
+    assert_equal Canoser::Uint16.decode_bytes("\x01\x01"), 257
   end
 
   def test_uint32
-    x = Canoser::Uint32.new(16)
-    assert_equal x.encode, "\x10\x00\x00\x00"
-    x = Canoser::Uint32.new(0x12345678)
-    assert_equal x.encode, "\x78\x56\x34\x12"
-    ret = Canoser::Uint32.decode_bytes("\x78\x56\x34\x12")
-    assert_equal ret.value, 0x12345678
+    assert_equal Canoser::Uint32.encode(16), "\x10\x00\x00\x00"
+    assert_equal Canoser::Uint32.encode(0x12345678), "\x78\x56\x34\x12"
+    assert_equal Canoser::Uint32.decode_bytes("\x78\x56\x34\x12"), 0x12345678
   end
 
   def test_uint64
-    x = Canoser::Uint64.new(16)
-    assert_equal x.encode, "\x10\x00\x00\x00\x00\x00\x00\x00"
-    x = Canoser::Uint64.new(0x1234567811223344)
-    assert_equal x.encode, "\x44\x33\x22\x11\x78\x56\x34\x12"    
-    ret = Canoser::Uint64.decode_bytes("\x44\x33\x22\x11\x78\x56\x34\x12")
-    assert_equal ret.value, 0x1234567811223344
+    assert_equal Canoser::Uint64.encode(16), "\x10\x00\x00\x00\x00\x00\x00\x00"
+    assert_equal Canoser::Uint64.encode(0x1234567811223344), "\x44\x33\x22\x11\x78\x56\x34\x12" 
+    assert_equal Canoser::Uint64.decode_bytes("\x44\x33\x22\x11\x78\x56\x34\x12" ), 0x1234567811223344
   end
 
   def test_bool
-    x = Canoser::Bool.new(true)
-    assert_equal x.encode, "\x1"
-    ret = Canoser::Bool.decode_bytes("\x1")
-    assert ret.value
-    assert_equal Canoser::Bool.new(false).encode, "\0"
+    assert_equal Canoser::Bool.encode(true), "\1"
+    assert_equal Canoser::Bool.encode(false), "\0"
+    assert Canoser::Bool.decode_bytes("\x1")
+    assert_equal Canoser::Bool.decode_bytes("\x0"), false
     assert_raises Canoser::ParseError do
       Canoser::Bool.decode_bytes("\x2")
     end
@@ -62,22 +51,34 @@ class CanoserTest < Minitest::Test
     assert_equal output, "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\a\b\t\n\v\f\r\u000E\u000F\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\e\u001C\u001D\u001E\u001F\u0000\u0000\u0000\u0000"
     des = Address.new.deserialize(output)
     assert_equal des["addr"], des[:addr]
-    (0..31).each{|x| assert_equal address[:addr][x].value, des[:addr][x].value}
-    (0..31).each{|x| assert_equal x, des[:addr][x].value}
+    (0..31).each{|x| assert_equal address[:addr][x], des[:addr][x]}
+    (0..31).each{|x| assert_equal x, des[:addr][x]}
     assert_equal des[:f2], []
   end
 
-  class BoolVector < Canoser::Struct
-    define_field :vec, [Canoser::Bool]
+  class Uint8Vector < Canoser::Struct
+    define_field :vec, [Canoser::Uint8]
   end
 
   def test_list_dyn_size
-    bools = BoolVector.new(vec: [true,false,true])
+    bools = Uint8Vector.new(vec: [2,3,4])
     ser = bools.serialize
-    assert_equal ser, "\x3\x0\x0\x0\x1\x0\x1"
-    vector = BoolVector.new.deserialize(ser)[:vec]
-    assert [true,false,true], vector.map{|x| x.value}
+    assert_equal ser, "\x3\x0\x0\x0\x2\x3\x4"
+    vector = Uint8Vector.new.deserialize(ser)[:vec]
+    assert [true,false,true], vector
   end
+
+  # class BoolVector < Canoser::Struct
+  #   define_field :vec, [Canoser::Bool]
+  # end
+
+  # def test_list_dyn_size
+  #   bools = BoolVector.new(vec: [true,false,true])
+  #   ser = bools.serialize
+  #   assert_equal ser, "\x3\x0\x0\x0\x1\x0\x1"
+  #   vector = BoolVector.new.deserialize(ser)[:vec]
+  #   assert [true,false,true], vector
+  # end
 
   class Map < Canoser::Struct
     define_field :map, {}
@@ -136,9 +137,17 @@ class CanoserTest < Minitest::Test
         d: true,
         e: map,
     )
+    addr_types = [[Canoser::Uint8]]
+    assert_equal addr.class.class_variable_get("@@types"), addr_types
+    bar_types = [Canoser::Uint64, [Canoser::Uint8], Addr, Canoser::Uint32]
+    assert_equal bar.class.class_variable_get("@@types"), bar_types
+    foo_types = [Canoser::Uint64, [Canoser::Uint8], CanoserTest::Bar, Canoser::Bool, {}]
+    assert_equal foo.class.class_variable_get("@@types"), foo_types
     str1 = foo.serialize
     str2 = [TEST_VECTOR_1].pack('H*')
     assert_equal str1, str2 
+    foo2 = Foo.new.deserialize(str1)
+    #assert_equal foo, foo2
   end
 
 end

@@ -3,32 +3,30 @@ require 'byebug'
 module Canoser
 
   refine Array do
-    def encode(type=Uint8)
+    def encode(arr, len=nil, type=Uint8)
       output = ""
-      output << Uint32.new(self.size).encode
-      self.each{|x| output << type.new(x).encode}
-      output   
+      output << Uint32.encode(arr.size) unless len
+      arr.each{|x| output << type.encode(x)}
+      output
     end
-  end
 
-  refine Array.singleton_class do
-    def decode(cursor, type=Uint8)
+    def decode(cursor, len=nil, type=Uint8)
       arr = []
-      len = Uint32.decode(cursor).value
+      len = Uint32.decode(cursor) unless len
       len.times do
-        arr << type.decode(cursor).value
+        arr << type.decode(cursor)
       end
       arr 
     end
   end
 
   refine Hash do
-    def encode
+    def encode(hash, ktype=[Uint8], vtype=[Uint8])
       output = ""
-      output << Uint32.new(self.size).encode
+      output << Uint32.encode(hash.size)
       sorted_map = {}
-      self.each do |k, v|
-        sorted_map[k.encode] = v.encode
+      hash.each do |k, v|
+        sorted_map[ktype.encode(k)] = vtype.encode(v)
       end
       sorted_map.keys.sort.each do |k|
         output << k
@@ -36,17 +34,13 @@ module Canoser
       end
       output
     end
-  end
 
-  refine Hash.singleton_class do
-    def decode(cursor)
+    def decode(cursor, ktype=[Uint8], vtype=[Uint8])
       hash = {}
-      len = Uint32.decode(cursor).value
+      len = Uint32.decode(cursor)
       len.times do
-        ksize = Uint32.decode(cursor).value
-        k = cursor.read_bytes(ksize)
-        vsize = Uint32.decode(cursor).value
-        v = cursor.read_bytes(vsize)
+        k = ktype.decode(cursor)
+        v = vtype.decode(cursor)
         hash[k] = v
       end
       hash
@@ -85,15 +79,9 @@ module Canoser
   			type = self.class.class_variable_get("@@types")[idx]
         if type.class == Array
           len = self.class.class_variable_get("@@arr_lens")[k]
-          raise "#{k}-#{type} #{len} != #{v.size}" if len && v.size != len
-          inner_type = type[0]
-          vv = v.map{|x| inner_type.new(x)}
-          @values[k] = vv
-        elsif type.class == Hash || type.ancestors.include?(Canoser::Struct)
-          @values[k] = v
-        else
-          @values[k] = type.new(v)
+          raise "fix-length array #{k}: #{len} != #{v.size}" if len && v.size != len
         end
+        @values[k] = v
   		end
   	end
 
@@ -101,21 +89,20 @@ module Canoser
       @values[name.to_sym]
     end
 
+    def self.encode(value)
+      value.serialize
+    end
+
   	def serialize
       output = ""
   		self.class.class_variable_get("@@names").each_with_index do |name, idx|
   			type = self.class.class_variable_get("@@types")[idx]
         value = @values[name]
-        if type.class == Array
-          len = self.class.class_variable_get("@@arr_lens")[name]
-          output << Uint32.new(value.size).encode unless len
-          value.each{|x| output << x.encode}
-        elsif type.class == Hash
-          output << value.encode
-        elsif type.ancestors.include?(Canoser::Struct)
-          output << value.serialize
+        len = self.class.class_variable_get("@@arr_lens")[name]
+        if len
+          output << type.encode(value, len)
         else
-          output << value.encode
+          output << type.encode(value)
         end
   		end
       output
@@ -123,26 +110,26 @@ module Canoser
 
   	def deserialize(bytes)
       cursor = Canoser::Cursor.new(bytes)
-  		self.class.class_variable_get("@@names").each_with_index do |name, idx|
-  			type = self.class.class_variable_get("@@types")[idx]
-        if type.class == Array
-          len = self.class.class_variable_get("@@arr_lens")[name]
-          unless len #dynamic sized array
-            len = Uint32.decode(cursor).value
-          end
-          arr = []
-          inner_type = type[0]
-          len.times{ arr.push(inner_type.decode(cursor))}
-          @values[name] = arr
-        elsif type.class == Hash
-          @values[name] = Hash.decode(cursor)
+      decode(cursor)
+  	end
+
+    def self.decode(cursor)
+      self.new({}).decode(cursor)
+    end
+
+    def decode(cursor)
+      self.class.class_variable_get("@@names").each_with_index do |name, idx|
+        type = self.class.class_variable_get("@@types")[idx]
+        len = self.class.class_variable_get("@@arr_lens")[name]
+        if len
+          @values[name] = type.decode(cursor, len)
         else
           @values[name] = type.decode(cursor)
         end
-  		end
-      raise ParseError.new("bytes not all consumed.") unless cursor.finished?
+      end
+      #raise ParseError.new("bytes not all consumed.") unless cursor.finished?
       self
-  	end
+    end
 
   end
 

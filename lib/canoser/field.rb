@@ -1,85 +1,59 @@
 
 module Canoser
-  class Field
-    attr_accessor :value
+  class IntField
+    @@pack_map = {8 => "C", 16 => "S", 32 => "L", 64 => "Q"}
 
-  	def initialize(value)
-  		@value = value
-  	end
-  end
-
-  class Uint8 < Field
-    def encode
-      [@value].pack("C")
+    def initialize(int_bits)
+      @int_bits = int_bits
     end
 
-    def self.decode_bytes(bytes)
-      new(bytes.unpack("C")[0])
+    def inspect
+      "Uint#{@int_bits}"
     end
 
-    def self.decode(cursor)
-      bytes = cursor.read_bytes(1)
-      decode_bytes(bytes)
-    end
-  end
-
-  class Uint16 < Field
-    def encode
-      [@value].pack("S")
+    def to_s
+      inspect
     end
 
-    def self.decode_bytes(bytes)
-      new(bytes.unpack("S")[0])
+    def pack_str
+      @@pack_map[@int_bits]
     end
 
-    def self.decode(cursor)
-      bytes = cursor.read_bytes(2)
-      decode_bytes(bytes)
-    end
-  end
-
-  class Uint32 < Field
-    def encode
-      [@value].pack("L")
+    def encode(value)
+      [value].pack(pack_str)
     end
 
-    def self.decode_bytes(bytes)
-      new(bytes.unpack("L")[0])
+    def decode_bytes(bytes)
+      bytes.unpack(pack_str)[0]
     end
 
-    def self.decode(cursor)
-      bytes = cursor.read_bytes(4)
-      decode_bytes(bytes)
-    end
-  end
-
-  class Uint64 < Field
-    def encode
-      [@value].pack("Q")
-    end
-
-    def self.decode_bytes(bytes)
-      new(bytes.unpack("Q")[0])
-    end
-
-    def self.decode(cursor)
-      bytes = cursor.read_bytes(8)
+    def decode(cursor)
+      bytes = cursor.read_bytes(@int_bits/8)
       decode_bytes(bytes)
     end
 
-    def self.max_value
-      2**64-1
+    def max_value
+      2**@int_bits - 1
     end
   end
 
-  class Bool < Field
-    def encode
-      @value? "\1" : "\0"
+  Uint8 = IntField.new(8)
+  Uint16 = IntField.new(16)
+  Uint32 = IntField.new(32)
+  Uint64 = IntField.new(64)
+
+  class Bool
+    def self.encode(value)
+      if value
+        "\1"
+      else
+        "\0"
+      end
     end
 
     def self.decode_bytes(bytes)
-      return new(true) if bytes == "\1"
-      return new(false) if bytes == "\0"
+      return true if bytes == "\1"
+      return false if bytes == "\0"
       raise ParseError.new("bool should be 0 or 1.")
     end
 
