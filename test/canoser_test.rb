@@ -80,14 +80,65 @@ class CanoserTest < Minitest::Test
   end
 
   class Map < Canoser::Struct
-    define_field :map, {} #libra only support [u8] both of k and v
+    define_field :map, {}
   end
 
-  def test_map
-    hash = {"k1" => "v1", "k2" => "v2"}
-    ser = Map.new(map: hash).serialize
-    hash2 = Map.new.deserialize(ser)[:map]
-    assert_equal hash, hash2
+#  libra only support [u8] type for both of k and v
+#  def test_map_with_string_kv
+#    hash = {"k1" => "v1", "k2" => "v2"}
+#    ser = Map.new(map: hash).serialize
+#    hash2 = Map.new.deserialize(ser)[:map]
+#    assert_equal hash, hash2
+#  end
+
+
+  #copy form libra source code
+  TEST_VECTOR_1 = "ffffffffffffffff060000006463584d4237640000000000000009000000000102"+
+                  "03040506070805050505050505050505050505050505050505050505050505050505"+
+                  "05050505630000000103000000010000000103000000161543030000000038150300"+
+                  "0000160a05040000001415596903000000c9175a"
+
+  class Addr < Canoser::Struct
+    define_field :addr, [Canoser::Uint8], 32
+  end
+
+  class Bar < Canoser::Struct
+    define_field :a, Canoser::Uint64
+    define_field :b, [Canoser::Uint8]
+    define_field :c, Addr
+    define_field :d, Canoser::Uint32
+  end
+
+  class Foo < Canoser::Struct
+    define_field :a, Canoser::Uint64
+    define_field :b, [Canoser::Uint8]
+    define_field :c, Bar
+    define_field :d, Canoser::Bool
+    define_field :e, {}
+  end
+
+  def test_with_libra_case
+    addr = Addr.new(addr: (0..31).map{|x| 5})
+    bar = Bar.new(
+        a: 100,
+        b: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+        c: addr,
+        d: 99,
+    )
+    map = {}
+    map[[0, 56, 21]] = [22, 10, 5]
+    map[[1]] = [22, 21, 67]
+    map[[20, 21, 89, 105]] = [201, 23, 90]
+    foo = Foo.new(
+        a: Canoser::Uint64.max_value,
+        b: [100, 99, 88, 77, 66, 55],
+        c: bar,
+        d: true,
+        e: map,
+    )
+    str1 = foo.serialize
+    str2 = [TEST_VECTOR_1].pack('H*')
+    assert_equal str1, str2 
   end
 
 end

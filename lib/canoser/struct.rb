@@ -2,16 +2,37 @@ require 'byebug'
 
 module Canoser
 
+  refine Array do
+    def encode(type=Uint8)
+      output = ""
+      output << Uint32.new(self.size).encode
+      self.each{|x| output << type.new(x).encode}
+      output   
+    end
+  end
+
+  refine Array.singleton_class do
+    def decode(cursor, type=Uint8)
+      arr = []
+      len = Uint32.decode(cursor).value
+      len.times do
+        arr << type.decode(cursor).value
+      end
+      arr 
+    end
+  end
+
   refine Hash do
     def encode
       output = ""
       output << Uint32.new(self.size).encode
-      self.keys.each do |key|
-        output << Uint32.new(key.size).encode
-        output << key.to_s
-        v = self[key]
-        output << Uint32.new(v.size).encode
-        output << v.to_s
+      sorted_map = {}
+      self.each do |k, v|
+        sorted_map[k.encode] = v.encode
+      end
+      sorted_map.keys.sort.each do |k|
+        output << k
+        output << sorted_map[k]
       end
       output
     end
@@ -68,7 +89,7 @@ module Canoser
           inner_type = type[0]
           vv = v.map{|x| inner_type.new(x)}
           @values[k] = vv
-        elsif type.class == Hash
+        elsif type.class == Hash || type.ancestors.include?(Canoser::Struct)
           @values[k] = v
         else
           @values[k] = type.new(v)
@@ -91,6 +112,8 @@ module Canoser
           value.each{|x| output << x.encode}
         elsif type.class == Hash
           output << value.encode
+        elsif type.ancestors.include?(Canoser::Struct)
+          output << value.serialize
         else
           output << value.encode
         end

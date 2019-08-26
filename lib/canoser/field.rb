@@ -66,6 +66,10 @@ module Canoser
       bytes = cursor.read_bytes(8)
       decode_bytes(bytes)
     end
+
+    def self.max_value
+      2**64-1
+    end
   end
 
   class Bool < Field
