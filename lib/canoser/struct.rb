@@ -1,4 +1,3 @@
-require 'byebug'
 
 module Canoser
 
@@ -97,13 +96,12 @@ module Canoser
       return true if self.equal?(other)
       self.class.class_variable_get("@@names").each_with_index do |name, idx|
         unless @values[name] == other[name]
-          byebug
           return false
         end
       end
       true
     end
-    
+
     def self.encode(value)
       value.serialize
     end
@@ -125,7 +123,9 @@ module Canoser
 
   	def deserialize(bytes)
       cursor = Canoser::Cursor.new(bytes)
-      decode(cursor)
+      ret = decode(cursor)
+      raise ParseError.new("bytes not all consumed.") unless cursor.finished?
+      ret
   	end
 
     def self.decode(cursor)
@@ -142,7 +142,6 @@ module Canoser
           @values[name] = type.decode(cursor)
         end
       end
-      #raise ParseError.new("bytes not all consumed.") unless cursor.finished?
       self
     end
 
