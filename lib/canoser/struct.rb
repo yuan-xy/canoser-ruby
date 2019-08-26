@@ -121,7 +121,7 @@ module Canoser
       output
   	end
 
-  	def deserialize(bytes)
+  	def self.deserialize(bytes)
       cursor = Canoser::Cursor.new(bytes)
       ret = decode(cursor)
       raise ParseError.new("bytes not all consumed.") unless cursor.finished?
