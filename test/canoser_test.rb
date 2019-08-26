@@ -81,17 +81,15 @@ class CanoserTest < Minitest::Test
   end
 
   class Map < Canoser::Struct
-    define_field :map, {String => String}
+    define_field :map, {Canoser::Str => Canoser::Str}
   end
 
-#  libra only support [u8] type for both of k and v
-#  def test_map_with_string_kv
-#    hash = {"k1" => "v1", "k2" => "v2"}
-#    ser = Map.new(map: hash).serialize
-#    hash2 = Map.deserialize(ser)[:map]
-#    assert_equal hash, hash2
-#  end
-
+  def test_map_with_string_kv
+    hash = {"k1" => "v1", "k2" => "v2"}
+    ser = Map.new(map: hash).serialize
+    hash2 = Map.deserialize(ser)[:map]
+    assert_equal hash, hash2
+  end
 
   #copy form libra source code
   TEST_VECTOR_1 = "ffffffffffffffff060000006463584d4237640000000000000009000000000102"+
@@ -137,11 +135,12 @@ class CanoserTest < Minitest::Test
         d: true,
         e: map,
     )
-    addr_types = [[Canoser::Uint8]]
+    addr_types = [Canoser::ArrayT.new(Canoser::Uint8,32)]
     assert_equal addr.class.class_variable_get("@@types"), addr_types
-    bar_types = [Canoser::Uint64, [Canoser::Uint8], Addr, Canoser::Uint32]
+    bar_types = [Canoser::Uint64, Canoser::ArrayT.new(Canoser::Uint8), Addr, Canoser::Uint32]
     assert_equal bar.class.class_variable_get("@@types"), bar_types
-    foo_types = [Canoser::Uint64, [Canoser::Uint8], CanoserTest::Bar, Canoser::Bool, {}]
+    foo_types = [Canoser::Uint64, Canoser::ArrayT.new(Canoser::Uint8), 
+      CanoserTest::Bar, Canoser::Bool, Canoser::HashT.new]
     assert_equal foo.class.class_variable_get("@@types"), foo_types
     str1 = foo.serialize
     str2 = [TEST_VECTOR_1].pack('H*')
