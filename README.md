@@ -31,9 +31,9 @@ Or install it yourself as:
 
 ## Usage
 
-First define a data structure with Canoser, that is, write a class that inherits from "Canoser::Struct", and then define the fields owned by the structure through the "define_field" method. This structure naturally has the ability to canonical serialize and deserialize. For example, the following AccountResource defines a data structure of the same name in the Libra code：
+First define a data structure with Canoser, that is, write a class that inherits from "Canoser::Struct", and then define the fields owned by the structure through the "define_field" method. This structure naturally has the ability to canonical serialize and deserialize types. For example, the following AccountResource defines a data structure of the same name in the Libra code：
 ```ruby
-  #ruby代码，利用canoser定义数据结构
+  #ruby code，define canoser data structure
   class AccountResource < Canoser::Struct
   	define_field :authentication_key, [Canoser::Uint8]
   	define_field :balance, Canoser::Uint64
