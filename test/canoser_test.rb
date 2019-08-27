@@ -91,6 +91,13 @@ class CanoserTest < Minitest::Test
     assert_equal hash, hash2
   end
 
+  def test_map_with_chinese
+    hash = {"中文" => "测试"}
+    ser = Map.new(map: hash).serialize
+    hash2 = Map.deserialize(ser)[:map]
+    #assert_equal hash, hash2
+  end
+
   #copy form libra source code
   TEST_VECTOR_1 = "ffffffffffffffff060000006463584d4237640000000000000009000000000102"+
                   "03040506070805050505050505050505050505050505050505050505050505050505"+
