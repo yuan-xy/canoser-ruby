@@ -1,35 +1,28 @@
 # Canoser
 
-[中文文档 Chinese document](/README-CN.md)
 
-A ruby implementation of the canonical serialization for the Libra network.
+Canoser是facebook推出的Libra网络中使用的规范序列化(canonical serialization)协议的第三方ruby实现框架。
 
-Canonical serialization guarantees byte consistency when serializing an in-memory
-data structure. It is useful for situations where two parties want to efficiently compare
-data structures they independently maintain. It happens in consensus where
-independent validators need to agree on the state they independently compute. A cryptographic
-hash of the serialized data structure is what ultimately gets compared. In order for
-this to work, the serialization of the same data structures must be identical when computed
-by independent validators potentially running different implementations
-of the same spec in different languages.
+规范序列化可确保内存里的数据结构在序列化的时候保证字节一致性。它适用于双方想要有效比较他们独立维护的数据结构。在共识协议中，独立验证者需要就他们独立计算的状态达成一致。共识双方比较的是序列化数据的加密散列。要实现这一点，在计算时，相同数据结构的序列化必须相同。而独立验证器可能由不同的语言编写，有不同的实现代码，但是都遵循同一个规范。
 
-## Installation
 
-Add this line to your application's Gemfile:
+## 安装
+
+添加下列行到你的项目的Gemfile文件:
 
 ```ruby
 gem 'canoser'
 ```
 
-And then execute:
+然后执行:
 
     $ bundle
 
-Or install it yourself as:
+或者直接通过命令行安装:
 
     $ gem install canoser
 
-## Usage
+## 使用
 
 Canoser可以自动实现数据结构的序列化和反序列化，只是需要按要求定义数据结构。以一个实际的Libra代码中的数据结构为例：
 
@@ -146,19 +139,4 @@ bytes = obj.serialize
 #反序列化
 obj = AccountResource.deserialize(bytes)
 ```
-
-
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/yuanxinyu/canoser. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
-## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
