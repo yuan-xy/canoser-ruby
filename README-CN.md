@@ -107,7 +107,7 @@ Map里的数据，如果没有定义类型，那么缺省是字节数组。下�
     define_field :addr, {}
   end
   class Map2 < Canoser::Struct
-    define_field :addr, {[Canoser::Uint8], [Canoser::Uint8]}
+    define_field :addr, {[Canoser::Uint8] => [Canoser::Uint8]}
   end  
 ```  
 

@@ -114,7 +114,7 @@ The default data type (if not defined) in the map is an array of Uint8. The foll
     define_field :addr, {}
   end
   class Map2 < Canoser::Struct
-    define_field :addr, {[Canoser::Uint8], [Canoser::Uint8]}
+    define_field :addr, {[Canoser::Uint8] => [Canoser::Uint8]}
   end  
 ```  
 
