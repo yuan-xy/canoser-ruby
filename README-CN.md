@@ -80,7 +80,7 @@ impl CanonicalSerialize for AccountResource {
 | Canoser::Str |  | 字符串 |
 | [] | 支持 | 数组类型 |
 | {} | 支持 |  Map类型 |
-| A Canoser::Struct |  | 嵌套的另外一个结构（不能循环引用） |
+| A Canoser::Struct Name |  | 嵌套的另外一个结构（不能循环引用） |
 
 ### 关于数组类型
 数组里的数据，如果没有定义类型，那么缺省是Uint8。下面的两个定义等价：

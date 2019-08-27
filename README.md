@@ -84,9 +84,9 @@ In Canoser, after defining the data structure, you don't need to write code to i
 | Canoser::Uint64 |  | Unsigned 64-bit integer |
 | Canoser::Bool |  | Boolean |
 | Canoser::Str |  | String |
-| [] | 支持 | Array Type |
-| {} | 支持 |  Map Type |
-| A Canoser::Struct |  | Another structure nested (cannot be recycled) |
+| [] | supported | Array Type |
+| {} | supported |  Map Type |
+| A Canoser::Struct Name|  | Another structure nested (cannot be recycled) |
 
 ### About Array Type
 The default data type (if not defined) in the array is Uint8. The following two definitions are equivalent:
