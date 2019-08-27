@@ -24,9 +24,23 @@ gem 'canoser'
 
 ## 使用
 
-Canoser可以自动实现数据结构的序列化和反序列化，只是需要按要求定义数据结构。以一个实际的Libra代码中的数据结构为例：
+首先用Canoser定义一个数据结构，也就是写一个类继承自"Canoser::Struct"，然后通过"define_field"方法来定义该结构所拥有的字段。该结构自然就拥有了序列化和反序列化的能力。例如下面的AccountResource定义了一个Libra代码中的同名数据结构：
+```ruby
+  #ruby代码，利用canoser定义数据结构
+  class AccountResource < Canoser::Struct
+  	define_field :authentication_key, [Canoser::Uint8]
+  	define_field :balance, Canoser::Uint64
+  	define_field :delegated_withdrawal_capability, Canoser::Bool
+  	define_field :received_events_count, Canoser::Uint64
+  	define_field :sent_events_count, Canoser::Uint64
+  	define_field :sequence_number, Canoser::Uint64
+  end
+```
 
+下面是Libra中定义该数据结构以及序列化的代码：
 ```rust
+// Libra中的rust语言代码
+// 定义数据结构
 pub struct AccountResource {
     balance: u64,
     sequence_number: u64,
@@ -35,6 +49,7 @@ pub struct AccountResource {
     received_events_count: u64,
     delegated_withdrawal_capability: bool,
 }
+// 实现序列化
 impl CanonicalSerialize for AccountResource {
     fn serialize(&self, serializer: &mut impl CanonicalSerializer) -> Result<()> {
         serializer
@@ -48,23 +63,12 @@ impl CanonicalSerialize for AccountResource {
     }
 }
 ```
-在Libra使用的rust中，需要手动写代码实现数据结构的序列化，而且数据结构中的字段顺序和序列化时的顺序不一定一致。
-在Canoser中，可以对应如下定义该数据结构
-```ruby
-  class AccountResource < Canoser::Struct
-  	define_field :authentication_key, [Canoser::Uint8]
-  	define_field :balance, Canoser::Uint64
-  	define_field :delegated_withdrawal_capability, Canoser::Bool
-  	define_field :received_events_count, Canoser::Uint64
-  	define_field :sent_events_count, Canoser::Uint64
-  	define_field :sequence_number, Canoser::Uint64
-  end  
-```
-注意，ruby中的数据结构顺序要按照Libra中序列化的顺序来定义。
+在Libra使用的rust语言中，需要手动写代码实现数据结构的序列化/反序列化，而且数据结构中的字段顺序和序列化时的顺序不一定一致。
+在Canoser中，定义好数据结构后，不需要写序列化和反序列化的代码。注意，Canoser中的数据结构顺序要按照Libra中序列化的顺序来定义。
 
-### 定义数据结构
+### 支持的数据类型
 
-定义数据结构的第一步是写一个类继承Canoser::Struct，然后通过define_field方法来定义该结构所拥有的字段。字段支持的类型有：
+字段支持的类型有：
 
 | 字段类型 | 可选子类型 | 说明 |
 | ------ | ------ | ------ |
@@ -107,6 +111,7 @@ Map里的数据，如果没有定义类型，那么缺省是字节数组。下�
   end  
 ```  
 
+### 结构嵌套
 下面是一个复杂的例子，包含三个数据结构：
 ```ruby
   class Addr < Canoser::Struct

@@ -31,9 +31,23 @@ Or install it yourself as:
 
 ## Usage
 
-Canoser可以自动实现数据结构的序列化和反序列化，只是需要按要求定义数据结构。以一个实际的Libra代码中的数据结构为例：
+First define a data structure with Canoser, that is, write a class that inherits from "Canoser::Struct", and then define the fields owned by the structure through the "define_field" method. This structure naturally has the ability to canonical serialize and deserialize. For example, the following AccountResource defines a data structure of the same name in the Libra code：
+```ruby
+  #ruby代码，利用canoser定义数据结构
+  class AccountResource < Canoser::Struct
+  	define_field :authentication_key, [Canoser::Uint8]
+  	define_field :balance, Canoser::Uint64
+  	define_field :delegated_withdrawal_capability, Canoser::Bool
+  	define_field :received_events_count, Canoser::Uint64
+  	define_field :sent_events_count, Canoser::Uint64
+  	define_field :sequence_number, Canoser::Uint64
+  end
+```
 
+Here is the code that defines this data structure and serialization in Libra code:
 ```rust
+// rust code in Libra
+// define the data structure
 pub struct AccountResource {
     balance: u64,
     sequence_number: u64,
@@ -42,6 +56,7 @@ pub struct AccountResource {
     received_events_count: u64,
     delegated_withdrawal_capability: bool,
 }
+// serialization
 impl CanonicalSerialize for AccountResource {
     fn serialize(&self, serializer: &mut impl CanonicalSerializer) -> Result<()> {
         serializer
@@ -55,38 +70,26 @@ impl CanonicalSerialize for AccountResource {
     }
 }
 ```
-在Libra使用的rust中，需要手动写代码实现数据结构的序列化，而且数据结构中的字段顺序和序列化时的顺序不一定一致。
-在Canoser中，可以对应如下定义该数据结构
-```ruby
-  class AccountResource < Canoser::Struct
-  	define_field :authentication_key, [Canoser::Uint8]
-  	define_field :balance, Canoser::Uint64
-  	define_field :delegated_withdrawal_capability, Canoser::Bool
-  	define_field :received_events_count, Canoser::Uint64
-  	define_field :sent_events_count, Canoser::Uint64
-  	define_field :sequence_number, Canoser::Uint64
-  end  
-```
-注意，ruby中的数据结构顺序要按照Libra中序列化的顺序来定义。
+In the rust language used by Libra, it is necessary to manually write code to serialize/deserialize the data structure, and the order of the fields in the data structure and the order of serialization are not necessarily the same.
 
-### 定义数据结构
+In Canoser, after defining the data structure, you don't need to write code to implement serialization and deserialization. Note that the order of the data structures in Canoser is defined in the order in which they are serialized in Libra.
 
-定义数据结构的第一步是写一个类继承Canoser::Struct，然后通过define_field方法来定义该结构所拥有的字段。字段支持的类型有：
+### Supported field types
 
-| 字段类型 | 可选子类型 | 说明 |
+| field type | optionl sub type | description |
 | ------ | ------ | ------ |
-| Canoser::Uint8 |  | 无符号8位整数 |
-| Canoser::Uint16 |  | 无符号16位整数 |
-| Canoser::Uint32 |  | 无符号32位整数 |
-| Canoser::Uint64 |  | 无符号64位整数 |
-| Canoser::Bool |  | 布尔类型 |
-| Canoser::Str |  | 字符串 |
-| [] | 支持 | 数组类型 |
-| {} | 支持 |  Map类型 |
-| A Canoser::Struct |  | 嵌套的另外一个结构（不能循环引用） |
+| Canoser::Uint8 |  | Unsigned 8-bit integer |
+| Canoser::Uint16 |  | Unsigned 16-bit integer|
+| Canoser::Uint32 |  | Unsigned 32-bit integer |
+| Canoser::Uint64 |  | Unsigned 64-bit integer |
+| Canoser::Bool |  | Boolean |
+| Canoser::Str |  | String |
+| [] | 支持 | Array Type |
+| {} | 支持 |  Map Type |
+| A Canoser::Struct |  | Another structure nested (cannot be recycled) |
 
-### 关于数组类型
-数组里的数据，如果没有定义类型，那么缺省是Uint8。下面的两个定义等价：
+### About Array Type
+The default data type (if not defined) in the array is Uint8. The following two definitions are equivalent:
 ```ruby
   class Arr1 < Canoser::Struct
     define_field :addr, []
@@ -95,16 +98,17 @@ impl CanonicalSerialize for AccountResource {
     define_field :addr, [Canoser::Uint8]
   end  
 ```  
-数组还可以定义长度，表示定长数据。比如Libra中的地址是256位，也就是32个字节，所以可以如下定义：
+Arrays can also define lengths to represent fixed length data. For example, the address in Libra is 256 bits, which is 32 bytes, so it can be defined as follows:
 ```ruby
   class Address < Canoser::Struct
     define_field :addr, [Canoser::Uint8], 32
   end  
 ```  
-定长数据在序列化的时候，不写入长度信息。
+When the fixed length data is serialized, the length information is not written to the output.
 
-### 关于Map类型
-Map里的数据，如果没有定义类型，那么缺省是字节数组。下面的两个定义等价：
+
+### About map type
+The default data type (if not defined) in the map is an array of Uint8. The following two definitions are equivalent:
 ```ruby
   class Map1 < Canoser::Struct
     define_field :addr, {}
@@ -114,7 +118,8 @@ Map里的数据，如果没有定义类型，那么缺省是字节数组。下�
   end  
 ```  
 
-下面是一个复杂的例子，包含三个数据结构：
+### Nested data structure
+The following is a complex example with three data structures:
 ```ruby
   class Addr < Canoser::Struct
     define_field :addr, [Canoser::Uint8], 32
@@ -135,10 +140,11 @@ Map里的数据，如果没有定义类型，那么缺省是字节数组。下�
     define_field :e, {}
   end
 ```
-这个例子参考自libra中canonical serialization的测试代码。
+This example refers to the test code from canonical serialization in libra.
 
-### 序列化和反序列化
-在定义好Canoser::Struct后，不需要自己实现序列化和反序列化代码，直接调用基类的默认实现即可。以AccountResource结构为例：
+### Serialization and deserialization
+After defining Canoser::Struct, you don't need to implement serialization and deserialization code yourself, you can directly call the default implementation of the base class. Take the AccountResource structure as an example:
+
 ```ruby
 #序列化
 obj = AccountResource.new(authentication_key:[...],...)
