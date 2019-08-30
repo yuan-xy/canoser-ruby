@@ -144,4 +144,11 @@ bytes = obj.serialize
 #反序列化
 obj = AccountResource.deserialize(bytes)
 ```
+### 从Struct对象中读取字段的值
+对于所有通过define_field方法定义的字段，可以通过[field_name]获取该字段的值。比如：
+
+```ruby
+obj[:authentication_key]
+```
+
 

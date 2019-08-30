@@ -146,11 +146,21 @@ This example refers to the test code from canonical serialization in libra.
 After defining Canoser::Struct, you don't need to implement serialization and deserialization code yourself, you can directly call the default implementation of the base class. Take the AccountResource structure as an example:
 
 ```ruby
-#序列化
+# serialize an object
 obj = AccountResource.new(authentication_key:[...],...)
 bytes = obj.serialize
-#反序列化
+
+# deserialize an object form bytes
 obj = AccountResource.deserialize(bytes)
+```
+
+### Get field value form object 
+For all fields defined by the "define_field" method, the value of this field of an object can be obtained via [field_name]. such as:
+
+```ruby
+obj[:authentication_key]
+#or
+obj["authentication_key"]
 ```
 
 

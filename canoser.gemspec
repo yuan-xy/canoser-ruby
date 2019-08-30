@@ -10,8 +10,8 @@ Gem::Specification.new do |spec|
   spec.email         = ["yuanxinyu.hangzhou@gmail.com"]
 
   spec.summary       = %q{A ruby implementation of the canonical serialization for the Libra network.}
-  spec.description   = %q{A ruby implementation of the canonical serialization for the Libra network.}
-  spec.homepage      = "https://github.com/yuanxinyu/canoser.git"
+  spec.description   = %q{A ruby implementation of the canonical serialization for the Libra network. Canonical serialization guarantees byte consistency when serializing an in-memory data structure. It is useful for situations where two parties want to efficiently compare data structures they independently maintain. It happens in consensus where independent validators need to agree on the state they independently compute. A cryptographic hash of the serialized data structure is what ultimately gets compared. In order for this to work, the serialization of the same data structures must be identical when computed by independent validators potentially running different implementations of the same spec in different languages.}
+  spec.homepage      = "https://github.com/yuanxinyu/canoser-ruby.git"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
@@ -20,8 +20,8 @@ Gem::Specification.new do |spec|
     spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
     spec.metadata["homepage_uri"] = spec.homepage
-    spec.metadata["source_code_uri"] = "https://github.com/yuanxinyu/canoser.git"
-    spec.metadata["changelog_uri"] = "https://github.com/yuanxinyu/canoser.git"
+    spec.metadata["source_code_uri"] = "https://github.com/yuanxinyu/canoser-ruby.git"
+    spec.metadata["changelog_uri"] = "https://github.com/yuanxinyu/canoser-ruby.git"
   else
     raise "RubyGems 2.0 or newer is required to protect against " \
       "public gem pushes."
