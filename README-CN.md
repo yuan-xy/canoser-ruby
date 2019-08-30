@@ -149,6 +149,8 @@ obj = AccountResource.deserialize(bytes)
 
 ```ruby
 obj[:authentication_key]
+#or
+obj["authentication_key"]
 ```
 
 
