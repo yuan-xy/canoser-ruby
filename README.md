@@ -150,11 +150,11 @@ After defining Canoser::Struct, you don't need to implement serialization and de
 obj = AccountResource.new(authentication_key:[...],...)
 bytes = obj.serialize
 
-# deserialize an object form bytes
+# deserialize an object from bytes
 obj = AccountResource.deserialize(bytes)
 ```
 
-### Get field value form object 
+### Get field value from object 
 For all fields defined by the "define_field" method, the value of this field of an object can be obtained via [field_name]. such as:
 
 ```ruby
