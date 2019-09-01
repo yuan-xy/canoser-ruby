@@ -155,12 +155,10 @@ obj = AccountResource.deserialize(bytes)
 ```
 
 ### Get field value from object 
-For all fields defined by the "define_field" method, the value of this field of an object can be obtained via [field_name]. such as:
+For all fields defined by the "define_field" method, the value of this field of an object can be obtained via field_name. such as:
 
 ```ruby
-obj[:authentication_key]
-#or
-obj["authentication_key"]
+obj.authentication_key
 ```
 
 

@@ -50,10 +50,9 @@ class CanoserTest < Minitest::Test
     output = address.serialize
     assert_equal output, "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\a\b\t\n\v\f\r\u000E\u000F\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\e\u001C\u001D\u001E\u001F\u0000\u0000\u0000\u0000"
     des = Address.deserialize(output)
-    assert_equal des["addr"], des[:addr]
-    (0..31).each{|x| assert_equal address[:addr][x], des[:addr][x]}
-    (0..31).each{|x| assert_equal x, des[:addr][x]}
-    assert_equal des[:f2], []
+    (0..31).each{|x| assert_equal address.addr[x], des.addr[x]}
+    (0..31).each{|x| assert_equal x, des.addr[x]}
+    assert_equal des.f2, []
   end
 
   class Uint8Vector < Canoser::Struct
@@ -64,7 +63,7 @@ class CanoserTest < Minitest::Test
     bools = Uint8Vector.new(vec: [2,3,4])
     ser = bools.serialize
     assert_equal ser, "\x3\x0\x0\x0\x2\x3\x4"
-    vector = Uint8Vector.deserialize(ser)[:vec]
+    vector = Uint8Vector.deserialize(ser).vec
     assert [2,3,4], vector
   end
 
@@ -76,7 +75,7 @@ class CanoserTest < Minitest::Test
     bools = BoolVector.new(vec: [true,false,true])
     ser = bools.serialize
     assert_equal ser, "\x3\x0\x0\x0\x1\x0\x1"
-    vector = BoolVector.deserialize(ser)[:vec]
+    vector = BoolVector.deserialize(ser).vec
     assert_equal [true,false,true], vector
   end
 
@@ -87,14 +86,14 @@ class CanoserTest < Minitest::Test
   def test_map_with_string_kv
     hash = {"k1" => "v1", "k2" => "v2"}
     ser = Map.new(map: hash).serialize
-    hash2 = Map.deserialize(ser)[:map]
+    hash2 = Map.deserialize(ser).map
     assert_equal hash, hash2
   end
 
   def test_map_with_chinese
     hash = {"中文" => "测试"}
     ser = Map.new(map: hash).serialize
-    hash2 = Map.deserialize(ser)[:map]
+    hash2 = Map.deserialize(ser).map
     #assert_equal hash, hash2
   end
 

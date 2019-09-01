@@ -16,12 +16,12 @@ module Canoser
         @@names << #{name}
         @@types ||= []
         @@types << type
+        attr_accessor(#{name})
       }
       class_eval str
   	end
 
   	def initialize(hash={})
-      @values = {}
   		hash.each do |k,v|
   			idx =  self.class.class_variable_get("@@names").find_index{|x| x==k}
   			raise "#{k} is not a field of #{self}" unless idx
@@ -30,22 +30,14 @@ module Canoser
           len = type.fixed_len
           raise "fix-length array #{k}: #{len} != #{v.size}" if len && v.size != len
         end
-        @values[k] = v
+        instance_variable_set("@#{k}", v)
   		end
   	end
-
-    def [](name)
-      @values[name.to_sym]
-    end
-
-    def []=(name, value)
-      @values[name.to_sym] = value
-    end
 
     def ==(other)
       return true if self.equal?(other)
       self.class.class_variable_get("@@names").each_with_index do |name, idx|
-        unless @values[name] == other[name]
+        unless instance_variable_get("@#{name}") == other.instance_variable_get("@#{name}")
           return false
         end
       end
@@ -60,7 +52,7 @@ module Canoser
       output = ""
   		self.class.class_variable_get("@@names").each_with_index do |name, idx|
   			type = self.class.class_variable_get("@@types")[idx]
-        value = @values[name]
+        value = instance_variable_get("@#{name}")
         output << type.encode(value)
   		end
       output
@@ -80,7 +72,7 @@ module Canoser
     def decode(cursor)
       self.class.class_variable_get("@@names").each_with_index do |name, idx|
         type = self.class.class_variable_get("@@types")[idx]
-        @values[name] = type.decode(cursor)
+        instance_variable_set("@#{name}", type.decode(cursor))
       end
       self
     end
