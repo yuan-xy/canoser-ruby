@@ -76,6 +76,10 @@ impl CanonicalSerialize for AccountResource {
 | Canoser::Uint16 |  | 无符号16位整数 |
 | Canoser::Uint32 |  | 无符号32位整数 |
 | Canoser::Uint64 |  | 无符号64位整数 |
+| Canoser::Int8 |  | 有符号8位整数 |
+| Canoser::Int16 |  | 有符号16位整数 |
+| Canoser::Int32 |  | 有符号32位整数 |
+| Canoser::Int64 |  | 有符号64位整数 |
 | Canoser::Bool |  | 布尔类型 |
 | Canoser::Str |  | 字符串 |
 | [] | 支持 | 数组类型 |

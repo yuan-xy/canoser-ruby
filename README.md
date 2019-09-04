@@ -82,6 +82,10 @@ In Canoser, after defining the data structure, you don't need to write code to i
 | Canoser::Uint16 |  | Unsigned 16-bit integer|
 | Canoser::Uint32 |  | Unsigned 32-bit integer |
 | Canoser::Uint64 |  | Unsigned 64-bit integer |
+| Canoser::Int8 |  | Signed 8-bit integer |
+| Canoser::Int16 |  | Signed 16-bit integer|
+| Canoser::Int32 |  | Signed 32-bit integer |
+| Canoser::Int64 |  | Signed 64-bit integer |
 | Canoser::Bool |  | Boolean |
 | Canoser::Str |  | String |
 | [] | supported | Array Type |

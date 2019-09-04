@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    canoser (0.1.0)
+    canoser (0.1.2)
 
 GEM
   remote: https://rubygems.org/
@@ -21,4 +21,4 @@ DEPENDENCIES
   rake (~> 10.0)
 
 BUNDLED WITH
-   2.0.1
+   2.0.2

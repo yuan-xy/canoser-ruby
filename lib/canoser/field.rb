@@ -3,12 +3,17 @@ module Canoser
   class IntField
     @@pack_map = {8 => "C", 16 => "S", 32 => "L", 64 => "Q"}
 
-    def initialize(int_bits)
+    def initialize(int_bits, signed=false)
       @int_bits = int_bits
+      @signed = signed
     end
 
     def inspect
-      "Uint#{@int_bits}"
+      if @signed
+        "Int#{@int_bits}"
+      else
+        "Uint#{@int_bits}"
+      end
     end
 
     def to_s
@@ -16,7 +21,9 @@ module Canoser
     end
 
     def pack_str
-      @@pack_map[@int_bits]
+      str = @@pack_map[@int_bits]
+      str = str.downcase if @signed
+      str
     end
 
     def encode(value)
@@ -33,7 +40,11 @@ module Canoser
     end
 
     def max_value
-      2**@int_bits - 1
+      if @signed
+        2**(@int_bits-1) - 1
+      else
+        2**@int_bits - 1
+      end
     end
   end
 
@@ -41,6 +52,11 @@ module Canoser
   Uint16 = IntField.new(16)
   Uint32 = IntField.new(32)
   Uint64 = IntField.new(64)
+
+  Int8 = IntField.new(8, true)
+  Int16 = IntField.new(16, true)
+  Int32 = IntField.new(32, true)
+  Int64 = IntField.new(64, true)
 
   class Bool
     def self.encode(value)

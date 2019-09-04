@@ -11,6 +11,16 @@ class CanoserTest < Minitest::Test
     assert_equal Canoser::Uint8.max_value, 255
   end
 
+  def test_int8
+    assert_equal Canoser::Int8.encode(16), "\x10"
+    assert_equal Canoser::Int8.decode_bytes("\x10"), 16
+    assert_equal Canoser::Int8.max_value, 127
+    assert_equal Canoser::Int8.encode(-1).bytes, "\xFF".bytes
+    assert_equal false, "\xFF".valid_encoding?   #not a valid utf-8 sequence
+    assert_equal Canoser::Int8.decode_bytes("\xFF"), -1
+    assert_equal Canoser::Int8.decode_bytes("\x80"), -128
+  end
+
   def test_uint16
     assert_equal Canoser::Uint16.encode(16), "\x10\x00"
     assert_equal Canoser::Uint16.encode(257), "\x01\x01"
