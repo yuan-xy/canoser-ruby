@@ -35,7 +35,7 @@ class CanoserTest < Minitest::Test
 
   def test_uint64
     assert_equal Canoser::Uint64.encode(16), "\x10\x00\x00\x00\x00\x00\x00\x00"
-    assert_equal Canoser::Uint64.encode(0x1234567811223344), "\x44\x33\x22\x11\x78\x56\x34\x12" 
+    assert_equal Canoser::Uint64.encode(0x1234567811223344), "\x44\x33\x22\x11\x78\x56\x34\x12"
     assert_equal Canoser::Uint64.decode_bytes("\x44\x33\x22\x11\x78\x56\x34\x12" ), 0x1234567811223344
   end
 
@@ -58,7 +58,7 @@ class CanoserTest < Minitest::Test
   	addr = (0..31).map{|x| x}
     address = Address.new(addr: addr, f2:[])
     output = address.serialize
-    assert_equal output, "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\a\b\t\n\v\f\r\u000E\u000F\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\e\u001C\u001D\u001E\u001F\u0000\u0000\u0000\u0000"
+    assert_equal output, " \u0000\u0000\u0000\u0000\u0001\u0002\u0003\u0004\u0005\u0006\a\b\t\n\v\f\r\u000E\u000F\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\e\u001C\u001D\u001E\u001F\u0000\u0000\u0000\u0000"
     des = Address.deserialize(output)
     (0..31).each{|x| assert_equal address.addr[x], des.addr[x]}
     (0..31).each{|x| assert_equal x, des.addr[x]}
@@ -109,9 +109,9 @@ class CanoserTest < Minitest::Test
 
   #copy form libra source code
   TEST_VECTOR_1 = "ffffffffffffffff060000006463584d4237640000000000000009000000000102"+
-                  "03040506070805050505050505050505050505050505050505050505050505050505"+
-                  "05050505630000000103000000010000000103000000161543030000000038150300"+
-                  "0000160a05040000001415596903000000c9175a"
+                  "03040506070820000000050505050505050505050505050505050505050505050505"+
+                  "05050505050505056300000001030000000100000001030000001615430300000000"+
+                  "381503000000160a05040000001415596903000000c9175a"
 
   class Addr < Canoser::Struct
     define_field :addr, [Canoser::Uint8], 32
@@ -155,12 +155,12 @@ class CanoserTest < Minitest::Test
     assert_equal addr.class.class_variable_get("@@types"), addr_types
     bar_types = [Canoser::Uint64, Canoser::ArrayT.new(Canoser::Uint8), Addr, Canoser::Uint32]
     assert_equal bar.class.class_variable_get("@@types"), bar_types
-    foo_types = [Canoser::Uint64, Canoser::ArrayT.new(Canoser::Uint8), 
+    foo_types = [Canoser::Uint64, Canoser::ArrayT.new(Canoser::Uint8),
       CanoserTest::Bar, Canoser::Bool, Canoser::HashT.new]
     assert_equal foo.class.class_variable_get("@@types"), foo_types
     str1 = foo.serialize
     str2 = [TEST_VECTOR_1].pack('H*')
-    assert_equal str1, str2 
+    assert_equal str1, str2
     foo2 = Foo.deserialize(str1)
     assert_equal foo, foo2
   end

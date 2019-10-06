@@ -95,7 +95,7 @@ module Canoser
       len.times do
         str << Uint8.decode(cursor)
       end
-      str 
+      str
     end
   end
 
@@ -110,19 +110,21 @@ module Canoser
 
     def encode(arr)
       output = ""
-      output << Uint32.encode(arr.size) unless @fixed_len
+      output << Uint32.encode(arr.size)
       arr.each{|x| output << @type.encode(x)}
       output
     end
 
     def decode(cursor)
       arr = []
-      len = @fixed_len
-      len = Uint32.decode(cursor) unless @fixed_len
+      len = Uint32.decode(cursor)
+      if @fixed_len && len != @fixed_len
+        raise ParseError.new("fix-len:#{@fixed_len} != #{len}")
+      end
       len.times do
         arr << @type.decode(cursor)
       end
-      arr 
+      arr
     end
 
     def ==(other)
